@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Effort Compliance Pulse — Shared Snapshot</title>
+<style>
+:root{
+  --bg:#0c0f1c; --panel:#141a2c; --line:#232b45; --text:#eef1fb; --muted:#8994b3;
+  --indigo:#4f46e5; --indigo2:#7c6cf0; --emerald:#10b981; --amber:#f59e0b; --rose:#f43f5e; --sky:#0ea5e9;
+  --shadow:0 14px 32px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:230px;flex:0 0 230px;background:linear-gradient(180deg,var(--indigo),#3730c9);color:#fff;
+  display:flex;flex-direction:column;padding:22px 18px;position:fixed;top:0;bottom:0;left:0;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+.brandmark{width:42px;height:42px;border-radius:13px;background:#ffffff22;display:grid;place-items:center;font-size:20px;border:1px solid #ffffff33}
+.brand b{font-size:17px;font-weight:900}
+.brand small{display:block;font-size:10px;color:#dfe0ff;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+.navsection{margin-top:26px}
+.navlabel{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#c9caff;font-weight:800;margin:0 0 8px 6px}
+.navitem{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;color:#eceeff;
+  font-weight:650;font-size:13.5px;cursor:pointer;margin-bottom:4px;transition:.18s}
+.navitem:hover{background:#ffffff14}
+.navitem.active{background:#ffffff;color:var(--indigo);font-weight:800}
+.sidefoot{margin-top:auto;padding-top:16px;border-top:1px solid #ffffff2a}
+.sidefoot p{font-size:11px;color:#d9dcff;line-height:1.5;margin:0}
+.viewbadge{display:inline-flex;align-items:center;gap:6px;background:#ffffff1e;border:1px solid #ffffff33;
+  border-radius:99px;padding:5px 11px;font-size:10.5px;font-weight:800;letter-spacing:.08em;margin-bottom:10px}
+.main{margin-left:230px;flex:1;padding:26px 30px 50px;max-width:1450px}
+.pagetitle{font-size:24px;font-weight:900;margin:6px 0 2px}
+.pagesub{color:var(--muted);font-size:13px}
+.snapshotpill{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--emerald);background:#10b98116;padding:6px 12px;border-radius:99px}
+.snapshotpill .dt{width:7px;height:7px;border-radius:50%;background:var(--emerald)}
+.kpirow{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:20px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.kpi .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:16px;margin-bottom:10px}
+.kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:800}
+.kpi .val{font-size:24px;font-weight:900;margin-top:4px}
+.kpi .hlp{font-size:11px;color:var(--muted);margin-top:2px}
+.kpi.wide .val{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px}
+.panel .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--indigo2);font-weight:800}
+.panel h2{font-size:16.5px;margin:6px 0 14px}
+.view{display:none;margin-top:18px}
+.view.active{display:block}
+.grid2{display:grid;grid-template-columns:1.5fr .95fr;gap:16px}
+.chartbox{height:320px}
+.sidecol{display:grid;gap:16px;align-content:start}
+.ringwrap{position:relative;height:190px}
+.ringcenter{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
+.ringcenter b{font-size:32px;font-weight:900}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{border-radius:14px;padding:14px;border:1px solid var(--line)}
+.stat .t{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.1em;font-weight:800}
+.stat .n{font-size:13.5px;font-weight:800;margin-top:8px}
+.stat .num{font-size:23px;font-weight:900;margin-top:3px}
+.artgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.artcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;
+  box-shadow:var(--shadow);transition:.2s;border-left:4px solid var(--indigo2)}
+.artcard:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(79,70,229,.28)}
+.artcard h3{font-size:14px;margin:0}
+.artmeta{color:var(--muted);font-size:11px;margin-top:4px}
+.artmini{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+.artmini div{text-align:center;background:var(--bg);border-radius:9px;padding:9px}
+.artmini b{display:block;font-size:18px}
+.artmini span{font-size:9px;color:var(--muted)}
+.progress{height:7px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:12px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--indigo2),var(--sky))}
+.duogrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ranklist{display:grid;gap:9px}
+.rankrow{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:10px 12px;
+  border-radius:12px;background:var(--bg);border:1px solid var(--line);cursor:pointer;transition:.18s}
+.rankrow:hover{transform:translateX(4px);border-color:var(--indigo2)}
+.ranknum{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:#4f46e52c;
+  color:var(--indigo2);font-weight:900;font-size:11.5px}
+.sparkline{height:6px;background:var(--line);border-radius:8px;overflow:hidden;margin-top:5px}
+.sparkline i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),#ff9b73)}
+.filterbar{display:flex;gap:10px;margin-top:16px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:12px;box-shadow:var(--shadow);flex-wrap:wrap}
+.filterbar input,.filterbar select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13px}
+.filterbar input{flex:1;min-width:180px}
+.tablewrap{overflow:auto;max-height:540px;border-radius:16px;margin-top:14px}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th{background:var(--bg);color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:12px;position:sticky;top:0}
+td{padding:12px;border-top:1px solid var(--line);font-size:13px}
+tbody tr:hover{background:var(--bg)}
+.badge{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;gap:5px}
+.badge.good{background:#10b98122;color:#3cf0be}
+.badge.bad{background:#f43f5e22;color:#ff8298}
+.mono{font-family:Consolas,monospace;color:var(--indigo2);font-weight:800}
+.modal{position:fixed;inset:0;background:#03050fdd;display:none;place-items:center;padding:20px;z-index:70;backdrop-filter:blur(3px)}
+.modal.show{display:grid}
+.modalbox{width:min(600px,100%);max-height:85vh;overflow:auto;background:var(--panel);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.modalhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.xbtn{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:700;color:var(--text)}
+.xbtn:hover{border-color:var(--rose);color:var(--rose)}
+.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.infonote{margin-top:16px;border:1px solid #4f46e555;background:#4f46e51c;border-radius:14px;padding:13px 16px;font-size:12.5px;display:flex;gap:10px}
+@media(max-width:1150px){.sidebar{position:relative;width:100%;flex:none;flex-direction:row;flex-wrap:wrap;padding:14px}
+  .main{margin-left:0}.grid2{grid-template-columns:1fr}.kpirow{grid-template-columns:repeat(3,1fr)}
+  .artgrid{grid-template-columns:repeat(2,1fr)}.duogrid{grid-template-columns:1fr}}
+@media(max-width:640px){.kpirow{grid-template-columns:repeat(2,1fr)}.artgrid{grid-template-columns:1fr}.pagetitle{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brandmark">&#9889;</div>
+      <div><b>PULSE</b><small>Effort Compliance</small></div>
+    </div>
+    <div class="navsection">
+      <div class="viewbadge">&#128065;&#65039; VIEW ONLY</div>
+      <div class="navlabel">Workspace</div>
+      <div class="navitem active" data-view="overview">&#128200;&nbsp; Overview</div>
+      <div class="navitem" data-view="matrix">&#128202;&nbsp; ART Matrix</div>
+      <div class="navitem" data-view="watchlist">&#9888;&#65039;&nbsp; Watchlist</div>
+      <div class="navitem" data-view="employees">&#128101;&nbsp; Employees</div>
+      <div class="navitem" data-view="records">&#128203;&nbsp; Records</div>
+    </div>
+    <div class="sidefoot">
+      <p id="sourceNote">Shared read-only snapshot. Contact the report owner for updates or ticket-level exports.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="snapshotpill"><span class="dt"></span><span id="snapshotLabel">Snapshot</span></div>
+    <h1 class="pagetitle">Effort Compliance Pulse</h1>
+    <div class="pagesub">Monthly worked tickets reconciled against AppLens YTD effort — team &amp; employee wise</div>
+
+    <section class="kpirow">
+      <div class="kpi"><div class="ico" style="background:#4f46e51c;color:var(--indigo2)">&#127919;</div><div class="lbl">Monthly Tickets</div><div class="val" id="kTotal">0</div><div class="hlp">Worked-ticket records</div></div>
+      <div class="kpi"><div class="ico" style="background:#f43f5e1c;color:var(--rose)">&#128308;</div><div class="lbl">Zero Effort</div><div class="val" style="color:var(--rose)" id="kZero">0</div><div class="hlp" id="kZeroHelp">Needs follow-up</div></div>
+      <div class="kpi"><div class="ico" style="background:#10b9811c;color:var(--emerald)">&#9989;</div><div class="lbl">Compliance</div><div class="val" style="color:var(--emerald)" id="kComp">0%</div><div class="hlp">Effort logged &gt; 0</div></div>
+      <div class="kpi"><div class="ico" style="background:#7c6cf01c;color:var(--indigo2)">&#128204;</div><div class="lbl">INC Tickets</div><div class="val" id="kInc">0</div><div class="hlp">Incidents in scope</div></div>
+      <div class="kpi"><div class="ico" style="background:#f59e0b1c;color:var(--amber)">&#128221;</div><div class="lbl">SR Tickets</div><div class="val" style="color:var(--amber)" id="kSr">0</div><div class="hlp">Service requests</div></div>
+      <div class="kpi wide"><div class="ico" style="background:#0ea5e91c;color:var(--sky)">&#128681;</div><div class="lbl">Highest Impact ART</div><div class="val" id="kHighArt">—</div><div class="hlp"><b id="kHighVal" style="color:var(--rose)">0</b> zero-effort tickets</div></div>
+    </section>
+
+    <section class="view active" id="view-overview">
+      <div class="grid2">
+        <div class="panel">
+          <div class="eyebrow">ART Exposure</div>
+          <h2>Monthly tickets vs zero effort</h2>
+          <div class="chartbox"><canvas id="barChart"></canvas></div>
+        </div>
+        <div class="sidecol">
+          <div class="panel">
+            <div class="eyebrow">Control Health</div>
+            <h2>Compliance ring</h2>
+            <div class="ringwrap"><canvas id="ringChart"></canvas><div class="ringcenter"><b id="ringVal">0%</b></div></div>
+          </div>
+          <div class="panel">
+            <div class="duo">
+              <div class="stat" style="background:#f43f5e14"><div class="t">Highest Zero Effort</div><div class="n" id="highArt">—</div><div class="num" style="color:var(--rose)" id="highVal">0</div></div>
+              <div class="stat" style="background:#f59e0b14"><div class="t">INC / SR Split</div><div class="n">Current scope</div><div class="num" style="color:var(--amber)" id="split">0 / 0</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-matrix"><div class="artgrid" id="artGrid"></div></section>
+
+    <section class="view" id="view-watchlist">
+      <div class="duogrid">
+        <div class="panel">
+          <div class="eyebrow">Action Ownership</div>
+          <h2>Top 10 assignees with zero effort</h2>
+          <div class="ranklist" id="ownerList"></div>
+        </div>
+        <div class="panel">
+          <div class="eyebrow">Performance Ranking</div>
+          <h2>ART compliance leaderboard</h2>
+          <div class="ranklist" id="leaderList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-employees">
+      <div class="panel">
+        <div class="filterbar"><input id="empSearch" placeholder="&#128269; Search employee or ART..."></div>
+        <div class="tablewrap">
+          <table><thead><tr><th>Employee</th><th>ART</th><th>Tickets</th><th>Zero Effort</th><th>Hours</th><th>Compliance</th></tr></thead>
+          <tbody id="empBody"></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-records">
+      <div class="panel">
+        <div class="filterbar">
+          <input id="ticketSearch" placeholder="&#128269; Search ticket, employee, ART, product...">
+          <select id="statusFilter"><option>All status</option><option>Zero effort</option><option>Effort logged</option></select>
+        </div>
+        <div class="tablewrap">
+          <table><thead><tr><th>Incident Number</th><th>ART</th><th>Assignee</th><th>Type</th><th>Product</th><th>Efforts in AppLens</th><th>Match</th><th>Status</th></tr></thead>
+          <tbody id="ticketBody"></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <div class="infonote">&#8505;&#65039; <span>This is a shared read-only snapshot. Uploading, exporting, and emailing are disabled in this view — please contact the report owner for the latest data or to request changes.</span></div>
+
+    <div class="foot">
+      <span id="footStatus">Snapshot shared for team visibility — not editable</span>
+      <span>Join: Incident Number = Ticket ID &nbsp;|&nbsp; Efforts in AppLens = SUM(Hours)</span>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <div class="modalhead">
+      <div><div class="eyebrow">ART Drill-down</div><h2 id="modalTitle" style="margin:5px 0"></h2></div>
+      <button class="xbtn" id="closeModal">Close &times;</button>
+    </div>
+    <div id="modalContent" style="font-size:13px"></div>
+  </div>
+</div>
+
+<script>
+/* ---- Embedded data payload (injected at generation time) ---- */
+const PAYLOAD = {"meta":{"source":"AppLens_Zero Efforted Ticket for Aug Tickets.xlsx","generatedAt":"12 Aug 2026"},"arts":["Classic - GenAm","Classic - Milepost","Classic - NB / Remittance / Others","Classic - PMF Surround / TLA","Ingenium / Vantage","LTC","Retail Annuity ART","Retail Comp ART","Retail Life ART","RIS","Shared/Data ART"],"tickets":[{"ticket":"INC015848927","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015847509","team":"LTC","employee":"Sandeep Kommana","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015844078","team":"Retail Annuity ART","employee":"Aditya Ajay Chavhan","type":"INC","product":"","hours":2,"match":"Matched"},{"ticket":"INC015843433","team":"Retail Life ART","employee":"Evan Bose","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015843340","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015843309","team":"Retail Life ART","employee":"Ritika Vanave","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015843205","team":"LTC","employee":"Sandeep Kommana","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015843143","team":"Retail Life ART","employee":"Sharad Choudhary","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015842839","team":"Retail Life ART","employee":"Sharad Choudhary","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015842113","team":"Classic - GenAm","employee":"Pragathy Jayabalan","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015840616","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015840604","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015837549","team":"RIS","employee":"Deepak Kumar N","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015837131","team":"Retail Comp ART","employee":"Elizabeth Nancy John Joseph Kennedy","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015837051","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015836671","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015835549","team":"Classic - Milepost","employee":"Prasanthi Meesala","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015831677","team":"Retail Comp ART","employee":"Aquib Jawed","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015831300","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015831133","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015830769","team":"Shared/Data ART","employee":"Dinesh Kumar Murugesan","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015830543","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015830532","team":"Retail Life ART","employee":"Rindan Mukherjee","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015830280","team":"Ingenium / Vantage","employee":"Divya Murukesan","type":"INC","product":"","hours":1,"match":"Matched"},{"ticket":"INC015830176","team":"Retail Life ART","employee":"Suvadeep Ghosh","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015830090","team":"Retail Life ART","employee":"Rindan Mukherjee","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015830066","team":"Retail Life ART","employee":"Ritika Vanave","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015829920","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015829908","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015829832","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015829486","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015829385","team":"Classic - GenAm","employee":"Gundu Gayatri Pravallika","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015828571","team":"LTC","employee":"Sandeep Kommana","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015827543","team":"RIS","employee":"Divya Bharathi Krishnamoorthi","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015827542","team":"RIS","employee":"Pragathy Jayabalan","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015824609","team":"Retail Comp ART","employee":"Elizabeth Nancy John Joseph Kennedy","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015824406","team":"LTC","employee":"Janani Kumarasamy","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015820019","team":"LTC","employee":"Sandeep Kommana","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015819055","team":"Ingenium / Vantage","employee":"Sarika PN","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015818980","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015818909","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015818782","team":"Shared/Data ART","employee":"Praveen Samuvel","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015818565","team":"LTC","employee":"Sandeep Kommana","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015818557","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"INC015818463","team":"Retail Life ART","employee":"Sharad Choudhary","type":"INC","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8834525","team":"Ingenium / Vantage","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8834339","team":"Retail Life ART","employee":"Sowmiya chinnusamy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114488","team":"Retail Life ART","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8833174","team":"RIS","employee":"Sanutha KR","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832923","team":"Classic - GenAm","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832809","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832645","team":"Classic - GenAm","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832637","team":"Classic - GenAm","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832456","team":"RIS","employee":"Jishnudeb Mondal","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832454","team":"Classic - GenAm","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"INC015846115","team":"Classic - GenAm","employee":"Vishnukkanth Jayabal","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832117","team":"RIS","employee":"Gautham Saravanan","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832090","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832047","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8832028","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831990","team":"RIS","employee":"Sanutha KR","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831943","team":"Classic - GenAm","employee":"Manohara R M","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831675","team":"RIS","employee":"Deepak Kumar N","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831394","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831384","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831364","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8831005","team":"RIS","employee":"Sanutha KR","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8830939","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8830861","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8830826","team":"Retail Life ART","employee":"Sowmiya chinnusamy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8830670","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8830466","team":"Retail Comp ART","employee":"Jeffery Calwin","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8830067","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114486","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114485","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8829033","team":"Retail Life ART","employee":"Vijay Kartheeswaran Manikandan","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828990","team":"Retail Life ART","employee":"Devika M S","type":"SR","product":"","hours":1.5,"match":"Matched"},{"ticket":"TASK8828967","team":"Retail Life ART","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828898","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828871","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828812","team":"Retail Annuity ART","employee":"Kannan Ramachandran","type":"SR","product":"","hours":3,"match":"Matched"},{"ticket":"TASK8828804","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828620","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828572","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828293","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828085","team":"Retail Life ART","employee":"Suvadeep Ghosh","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828021","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8828015","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":5,"match":"Matched"},{"ticket":"TASK8827966","team":"Retail Annuity ART","employee":"Nithin Bharathy Ganesh","type":"SR","product":"","hours":2.5,"match":"Matched"},{"ticket":"TASK8827857","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8827729","team":"RIS","employee":"Deepak Kumar N","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8827651","team":"Retail Annuity ART","employee":"Pritam Biswas","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8827364","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8827238","team":"RIS","employee":"Deepak Kumar N","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8827136","team":"RIS","employee":"Jishnudeb Mondal","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8826335","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8826174","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8826088","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8826075","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8825983","team":"Classic - GenAm","employee":"Chavan Naga Sai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8825676","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8825675","team":"Shared/Data ART","employee":"Chinnama Naidu Ranganathan Radhamani","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8825642","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":5,"match":"Matched"},{"ticket":"TASK8825329","team":"Retail Annuity ART","employee":"Nithin Bharathy Ganesh","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8825174","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8825105","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8825013","team":"Classic - NB / Remittance / Others","employee":"MAHANANDI YARRAMSETTY","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8824951","team":"Retail Life ART","employee":"Akash Arumugam","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"TASK8824915","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8824819","team":"Retail Life ART","employee":"Sowmiya chinnusamy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8824803","team":"Classic - GenAm","employee":"Bhavani Janjanam","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8824476","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8824416","team":"LTC","employee":"Janani Kumarasamy","type":"SR","product":"","hours":10,"match":"Matched"},{"ticket":"TASK8824251","team":"RIS","employee":"Gautham Saravanan","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8823902","team":"Retail Annuity ART","employee":"Pritam Biswas","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8823052","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8822953","team":"RIS","employee":"Gautham Saravanan","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8822776","team":"Shared/Data ART","employee":"Chinnama Naidu Ranganathan Radhamani","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8822120","team":"Retail Annuity ART","employee":"Kannan Ramachandran","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8822075","team":"LTC","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8821876","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8821852","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8821712","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8821485","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8821334","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8821244","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8821183","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8821058","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8820254","team":"RIS","employee":"Karthikeyan N S Srinivasan N K","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8820121","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8819929","team":"LTC","employee":"Janani Kumarasamy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114476","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8819580","team":"RIS","employee":"Deepak Kumar N","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8819451","team":"Classic - Milepost","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8819400","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8818451","team":"Retail Life ART","employee":"PRIYADHARSHINI Ravi","type":"SR","product":"","hours":22,"match":"Matched"},{"ticket":"TASK8818448","team":"Retail Life ART","employee":"PRIYADHARSHINI Ravi","type":"SR","product":"","hours":11.5,"match":"Matched"},{"ticket":"TASK8818439","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"INC015752607","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":3,"match":"Matched"},{"ticket":"TASK8828990","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":1.5,"match":"Matched"},{"ticket":"TASK8818265","team":"Retail Life ART","employee":"PRIYADHARSHINI Ravi","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8817976","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8817471","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8817418","team":"Shared/Data ART","employee":"Chinnama Naidu Ranganathan Radhamani","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8817219","team":"Classic - NB / Remittance / Others","employee":"Karthic Dhanasekaran","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"TASK8817153","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8816251","team":"Shared/Data ART","employee":"Jency Priya Theoplus","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8816171","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114460","team":"Retail Life ART","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8814970","team":"Retail Life ART","employee":"PRIYADHARSHINI Ravi","type":"SR","product":"","hours":2.5,"match":"Matched"},{"ticket":"TASK8814809","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8814643","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8814170","team":"Retail Life ART","employee":"Vijay Kartheeswaran Manikandan","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8813523","team":"RIS","employee":"Sanutha KR","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8813217","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8813200","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":3.5,"match":"Matched"},{"ticket":"TASK8813068","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8812668","team":"Classic - PMF Surround / TLA","employee":"Barla Eliya","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8812577","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":11,"match":"Matched"},{"ticket":"TASK8811707","team":"Retail Life ART","employee":"Suvadeep Ghosh","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8811309","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":1,"match":"Matched"},{"ticket":"TASK8810937","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8810522","team":"Classic - PMF Surround / TLA","employee":"Sathishkumar Perumal","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8809633","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8809318","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":15,"match":"Matched"},{"ticket":"TASK8808983","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8808952","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8807933","team":"Retail Life ART","employee":"Suvadeep Ghosh","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8807771","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8806704","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":3,"match":"Matched"},{"ticket":"TASK8806085","team":"Retail Life ART","employee":"Devika M S","type":"SR","product":"","hours":12,"match":"Matched"},{"ticket":"TASK8805685","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8804109","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8803891","team":"Retail Life ART","employee":"Akash Arumugam","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8802759","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8802544","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8802454","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8801978","team":"Classic - GenAm","employee":"Nikita Swami","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8799931","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"INC015764148","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8798923","team":"Shared/Data ART","employee":"Jency Priya Theoplus","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8796766","team":"Retail Comp ART","employee":"Jeffery Calwin","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8796045","team":"Classic - GenAm","employee":"Manohara R M","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8795916","team":"Shared/Data ART","employee":"Chinnama Naidu Ranganathan Radhamani","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8795832","team":"Retail Life ART","employee":"Victorsamuvel Samuthiram","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8793541","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":3,"match":"Matched"},{"ticket":"TASK8791603","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":5,"match":"Matched"},{"ticket":"TASK8791446","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":10.5,"match":"Matched"},{"ticket":"TASK8784827","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8784348","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8784312","team":"Retail Annuity ART","employee":"Pritam Biswas","type":"SR","product":"","hours":12,"match":"Matched"},{"ticket":"TASK8784191","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8782722","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8782679","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8782671","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8782646","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"SR","product":"","hours":0.75,"match":"Matched"},{"ticket":"TASK8782628","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"SR","product":"","hours":0.75,"match":"Matched"},{"ticket":"TASK8782626","team":"Ingenium / Vantage","employee":"Deepika Ranganathan","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8782614","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"SR","product":"","hours":0.75,"match":"Matched"},{"ticket":"TASK8782603","team":"Classic - NB / Remittance / Others","employee":"Venkata Nagendra Praveen Dwarapureddy","type":"SR","product":"","hours":0.75,"match":"Matched"},{"ticket":"TASK8782557","team":"Retail Life ART","employee":"Rindan Mukherjee","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8782200","team":"Classic - NB / Remittance / Others","employee":"Karthic Dhanasekaran","type":"SR","product":"","hours":0.75,"match":"Matched"},{"ticket":"TASK8781137","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8779568","team":"Classic - NB / Remittance / Others","employee":"Karthic Dhanasekaran","type":"SR","product":"","hours":2.75,"match":"Matched"},{"ticket":"TASK8779356","team":"Classic - NB / Remittance / Others","employee":"Karthic Dhanasekaran","type":"SR","product":"","hours":3.75,"match":"Matched"},{"ticket":"TASK8778282","team":"Classic - NB / Remittance / Others","employee":"Karthic Dhanasekaran","type":"SR","product":"","hours":4.25,"match":"Matched"},{"ticket":"TASK8777404","team":"Classic - Milepost","employee":"Veera Durga Siva Prasad Purramsetty","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8777269","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8775988","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8773388","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114420","team":"Classic - Milepost","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8772760","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":13,"match":"Matched"},{"ticket":"TASK8772026","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"TASK8768807","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8767396","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8765842","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":5,"match":"Matched"},{"ticket":"TASK8761611","team":"Classic - GenAm","employee":"Srivalli Chintapalli","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8761428","team":"Retail Life ART","employee":"Suvadeep Ghosh","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8761386","team":"Retail Comp ART","employee":"Sayan Talukder","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8755902","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8755612","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8754757","team":"Retail Life ART","employee":"Suvadeep Ghosh","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114399","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":15.5,"match":"Matched"},{"ticket":"TASK8754384","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":25,"match":"Matched"},{"ticket":"TASK8753547","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":13,"match":"Matched"},{"ticket":"TASK8749727","team":"Retail Life ART","employee":"Flaming George Panguras Selvan","type":"SR","product":"","hours":46,"match":"Matched"},{"ticket":"TASK8747638","team":"Classic - GenAm","employee":"Saikrishna Anishetti","type":"SR","product":"","hours":22,"match":"Matched"},{"ticket":"TASK8746067","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8746060","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8745243","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8743254","team":"Retail Life ART","employee":"Akash Arumugam","type":"SR","product":"","hours":24,"match":"Matched"},{"ticket":"TASK8738683","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8735027","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":12,"match":"Matched"},{"ticket":"TASK8734532","team":"Ingenium / Vantage","employee":"Umapathy Anjaneyalu","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8731660","team":"Retail Annuity ART","employee":"Kannan Ramachandran","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8731513","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8728461","team":"Retail Annuity ART","employee":"Nithin Bharathy Ganesh","type":"SR","product":"","hours":72.25,"match":"Matched"},{"ticket":"TASK8722945","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":12,"match":"Matched"},{"ticket":"TASK8721231","team":"Retail Life ART","employee":"","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8719319","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":17,"match":"Matched"},{"ticket":"TASK8718881","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8713116","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":14,"match":"Matched"},{"ticket":"TASK8709496","team":"Retail Life ART","employee":"Devika M S","type":"SR","product":"","hours":21.5,"match":"Matched"},{"ticket":"TASK8707978","team":"Retail Life ART","employee":"Devika M S","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8700296","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":14.5,"match":"Matched"},{"ticket":"TASK8699856","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":5,"match":"Matched"},{"ticket":"TASK8698710","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":44,"match":"Matched"},{"ticket":"TASK8695446","team":"Classic - PMF Surround / TLA","employee":"Shanmugapriya Ramasami","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8694926","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8694849","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8688959","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8679615","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":11.5,"match":"Matched"},{"ticket":"TASK8679319","team":"Retail Life ART","employee":"PRIYADHARSHINI Ravi","type":"SR","product":"","hours":75,"match":"Matched"},{"ticket":"TASK8678236","team":"Classic - GenAm","employee":"Gundu Gayatri Pravallika","type":"SR","product":"","hours":108,"match":"Matched"},{"ticket":"TASK8674538","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8671191","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":15,"match":"Matched"},{"ticket":"TASK8667760","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8664516","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8662883","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8655731","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":12,"match":"Matched"},{"ticket":"TASK8655020","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8632911","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":45,"match":"Matched"},{"ticket":"TASK8626056","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8607649","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":23.5,"match":"Matched"},{"ticket":"TASK8607380","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":52.5,"match":"Matched"},{"ticket":"TASK8605014","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":95,"match":"Matched"},{"ticket":"MTASK0114245","team":"Retail Life ART","employee":"Vijay Kartheeswaran Manikandan","type":"SR","product":"","hours":29,"match":"Matched"},{"ticket":"MTASK0114244","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":21,"match":"Matched"},{"ticket":"TASK8590883","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":38.5,"match":"Matched"},{"ticket":"TASK8583354","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":61,"match":"Matched"},{"ticket":"TASK8582480","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8580514","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":10.5,"match":"Matched"},{"ticket":"TASK8574211","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8573113","team":"Retail Life ART","employee":"Amar Kumar Jha","type":"SR","product":"","hours":57.5,"match":"Matched"},{"ticket":"TASK8561745","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8557852","team":"Retail Annuity ART","employee":"Pritam Biswas","type":"SR","product":"","hours":122.5,"match":"Matched"},{"ticket":"TASK8553673","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":29.5,"match":"Matched"},{"ticket":"TASK8545558","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":23,"match":"Matched"},{"ticket":"TASK8521331","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":37,"match":"Matched"},{"ticket":"TASK8511886","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":102.75,"match":"Matched"},{"ticket":"TASK8500516","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":39.5,"match":"Matched"},{"ticket":"TASK8497248","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":49,"match":"Matched"},{"ticket":"TASK8497222","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":32,"match":"Matched"},{"ticket":"TASK8493953","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8489117","team":"Ingenium / Vantage","employee":"Deepika Ranganathan","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8473779","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":21,"match":"Matched"},{"ticket":"TASK8453868","team":"Ingenium / Vantage","employee":"Kshitij Khadse","type":"SR","product":"","hours":26,"match":"Matched"},{"ticket":"TASK8438413","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":19,"match":"Matched"},{"ticket":"TASK8397520","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":28.5,"match":"Matched"},{"ticket":"TASK8353312","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8352843","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":96.75,"match":"Matched"},{"ticket":"TASK8343443","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":74,"match":"Matched"},{"ticket":"TASK8323514","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"TASK8269368","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":16.5,"match":"Matched"},{"ticket":"TASK8237678","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":27.5,"match":"Matched"},{"ticket":"TASK8209507","team":"LTC","employee":"Sandeep Kommana","type":"SR","product":"","hours":18,"match":"Matched"},{"ticket":"TASK7967438","team":"Retail Life ART","employee":"Shekhar Saha","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK7948217","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":161.5,"match":"Matched"},{"ticket":"TASK8792317","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114469","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114467","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114466","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"MTASK0114465","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":13.75,"match":"Matched"},{"ticket":"MTASK0114464","team":"Retail Annuity ART","employee":"Divya Bharathi Thangaraj","type":"SR","product":"","hours":12.5,"match":"Matched"},{"ticket":"TASK8817106","team":"Classic - PMF Surround / TLA","employee":"Anidon Babu","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8816717","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8816692","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8816530","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114462","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8816200","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8814926","team":"Classic - GenAm","employee":"Gundu Gayatri Pravallika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8814464","team":"LTC","employee":"Janani Kumarasamy","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"TASK8814314","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"INC015810940","team":"Retail Life ART","employee":"Edward Diehl","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8813609","team":"Retail Life ART","employee":"PRIYADHARSHINI Ravi","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8813384","team":"Retail Annuity ART","employee":"Mohar Gupta","type":"SR","product":"","hours":11,"match":"Matched"},{"ticket":"TASK8813357","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8813339","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8813211","team":"Classic - GenAm","employee":"Gundu Gayatri Pravallika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8813189","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8813059","team":"Classic - NB / Remittance / Others","employee":"Harika Dareddy","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8812826","team":"Classic - GenAm","employee":"Bhavani Janjanam","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8812603","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8811638","team":"Classic - GenAm","employee":"Chavan Naga Sai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8811634","team":"Classic - GenAm","employee":"Chavan Naga Sai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"INC015804876","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":2,"match":"Matched"},{"ticket":"TASK8809541","team":"Ingenium / Vantage","employee":"SATYAPRIYA MANDAPATI","type":"SR","product":"","hours":1,"match":"Matched"},{"ticket":"TASK8809454","team":"Classic - GenAm","employee":"Chavan Naga Sai","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"TASK8809447","team":"Classic - GenAm","employee":"Chavan Naga Sai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8807325","team":"Classic - GenAm","employee":"Sowndarya Kumar","type":"SR","product":"","hours":17,"match":"Matched"},{"ticket":"TASK8806546","team":"LTC","employee":"Janani Kumarasamy","type":"SR","product":"","hours":3,"match":"Matched"},{"ticket":"TASK8806203","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8803934","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114450","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":43,"match":"Matched"},{"ticket":"TASK8799508","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8797297","team":"Retail Annuity ART","employee":"Kannan Ramachandran","type":"SR","product":"","hours":4.5,"match":"Matched"},{"ticket":"TASK8797039","team":"Retail Annuity ART","employee":"Akashdip Mazumder","type":"SR","product":"","hours":5,"match":"Matched"},{"ticket":"TASK8795063","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":6,"match":"Matched"},{"ticket":"TASK8793712","team":"Retail Life ART","employee":"Ritika Vanave","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"INC015752439","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8787632","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":14.5,"match":"Matched"},{"ticket":"TASK8785996","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":9,"match":"Matched"},{"ticket":"INC015736661","team":"Ingenium / Vantage","employee":"Soundary Annathai","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"MTASK0114428","team":"Classic - PMF Surround / TLA","employee":"Sathishkumar Perumal","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8782721","team":"Retail Comp ART","employee":"Jeffery Calwin","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8765209","team":"Retail Life ART","employee":"Sowmiya chinnusamy","type":"SR","product":"","hours":15,"match":"Matched"},{"ticket":"TASK8765085","team":"Shared/Data ART","employee":"Srivalli Chintapalli","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8742818","team":"Shared/Data ART","employee":"Chinnama Naidu Ranganathan Radhamani","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8738031","team":"Shared/Data ART","employee":"Prithwish Chatterjee","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8738010","team":"Shared/Data ART","employee":"Prithwish Chatterjee","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8724808","team":"Ingenium / Vantage","employee":"Prashanth Durai","type":"SR","product":"","hours":14,"match":"Matched"},{"ticket":"TASK8718317","team":"Retail Annuity ART","employee":"Manikanta Padavala","type":"SR","product":"","hours":4,"match":"Matched"},{"ticket":"TASK8708996","team":"LTC","employee":"Akhileswary Balija","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8698601","team":"Ingenium / Vantage","employee":"Bhuvaneswari Rajaram","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8687078","team":"Retail Life ART","employee":"Dharmireddy Liharika","type":"SR","product":"","hours":0,"match":"Not found"},{"ticket":"TASK8670394","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":17.5,"match":"Matched"},{"ticket":"TASK8609510","team":"Ingenium / Vantage","employee":"Naga Raju Gonimadatala","type":"SR","product":"","hours":19.5,"match":"Matched"},{"ticket":"TASK8602769","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":43.5,"match":"Matched"},{"ticket":"TASK8575574","team":"Retail Annuity ART","employee":"Nithin Bharathy Ganesh","type":"SR","product":"","hours":140.5,"match":"Matched"},{"ticket":"TASK8561533","team":"Ingenium / Vantage","employee":"Gowtham Peddireddy","type":"SR","product":"","hours":0,"match":"Not found"}]};
+
+function loadScriptChain(urls){
+  return new Promise(resolve=>{
+    let i=0;
+    (function tryNext(){
+      if(i>=urls.length){resolve(false);return;}
+      const s=document.createElement('script');
+      s.src=urls[i++];
+      s.onload=()=>resolve(true);
+      s.onerror=()=>{s.remove();tryNext();};
+      document.head.appendChild(s);
+    })();
+  });
+}
+const CHART_CDNS=[
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js',
+  'https://unpkg.com/chart.js@4.4.3/dist/chart.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js'
+];
+let chartOk=false, barChart, ringChart;
+const $=id=>document.getElementById(id);
+const ARTS=PAYLOAD.arts;
+const rows=PAYLOAD.tickets||[];
+
+function init(){
+  bind();
+  $('snapshotLabel').textContent = 'Snapshot' + (PAYLOAD.meta && PAYLOAD.meta.generatedAt ? ' — generated ' + PAYLOAD.meta.generatedAt : '');
+  if(PAYLOAD.meta && PAYLOAD.meta.source){
+    $('sourceNote').textContent = 'Shared read-only snapshot from ' + PAYLOAD.meta.source + '. Contact the report owner for updates or ticket-level exports.';
+    $('footStatus').textContent = rows.length + ' monthly records — snapshot from ' + PAYLOAD.meta.source + '. Not editable.';
+  }
+  loadScriptChain(CHART_CDNS).then(ok=>{
+    chartOk=ok;
+    if(ok){ render(); }
+    else {
+      ['barChart','ringChart'].forEach(id=>{
+        $(id).parentElement.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:12.5px">Chart engine unavailable in this preview. Open the file directly in your browser (not an embedded preview) to view charts.</div>';
+      });
+      renderArts(computeTeamData());
+      renderOwners(computeTeamData());
+      renderEmployees();
+      renderTickets();
+      renderKpis(computeTeamData());
+    }
+  });
+}
+function bind(){
+  document.querySelectorAll('.navitem[data-view]').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.navitem').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); $('view-'+b.dataset.view).classList.add('active');
+  });
+  $('closeModal').onclick=()=>$('modal').classList.remove('show');
+  $('modal').onclick=e=>{if(e.target.id==='modal')$('modal').classList.remove('show')};
+  $('empSearch').oninput=()=>renderEmployees();
+  $('ticketSearch').oninput=()=>renderTickets();
+  $('statusFilter').onchange=()=>renderTickets();
+}
+function computeTeamData(){
+  return ARTS.map(team=>{
+    const x=rows.filter(r=>r.team===team), zero=x.filter(r=>r.hours===0).length;
+    return{team,total:x.length,zero,logged:x.length-zero,
+      compliance:x.length?Math.round((x.length-zero)/x.length*100):0,
+      inc:x.filter(r=>r.type==='INC').length, sr:x.filter(r=>r.type==='SR').length};
+  }).filter(x=>x.total);
+}
+function renderKpis(teamData){
+  const zero=rows.filter(r=>r.hours===0).length, logged=rows.length-zero;
+  const comp=rows.length?Math.round(logged/rows.length*100):0;
+  const inc=rows.filter(r=>r.type==='INC').length, sr=rows.filter(r=>r.type==='SR').length;
+  const high=[...teamData].sort((a,b)=>b.zero-a.zero)[0];
+  $('kTotal').textContent=rows.length;
+  $('kZero').textContent=zero;
+  $('kZeroHelp').textContent=`${rows.length?Math.round(zero/rows.length*100):0}% needs action`;
+  $('kComp').textContent=comp+'%';
+  $('kInc').textContent=inc;
+  $('kSr').textContent=sr;
+  $('kHighArt').textContent=high?.team||'No data';
+  $('kHighVal').textContent=high?.zero||0;
+  $('highArt').textContent=high?.team||'No data';
+  $('highVal').textContent=high?.zero||0;
+  $('split').textContent=`${inc} / ${sr}`;
+}
+function render(){
+  const teamData=computeTeamData();
+  renderKpis(teamData);
+  renderCharts(teamData);
+  renderArts(teamData);
+  renderOwners(teamData);
+  renderEmployees();
+  renderTickets();
+}
+function renderCharts(teamData){
+  const logged=rows.length-rows.filter(r=>r.hours===0).length, zero=rows.filter(r=>r.hours===0).length;
+  const labels=teamData.map(x=>x.team.replace('Classic - ','')), tot=teamData.map(x=>x.total), zs=teamData.map(x=>x.zero);
+  barChart?.destroy();
+  barChart=new Chart($('barChart'),{type:'bar',data:{labels,datasets:[
+    {label:'Monthly Tickets',data:tot,backgroundColor:'#3a4d72',borderRadius:8,maxBarThickness:28},
+    {label:'Zero Effort',data:zs,backgroundColor:'#f43f5e',borderRadius:8,maxBarThickness:28}
+  ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',animation:{duration:650},
+    plugins:{legend:{labels:{color:'#8994b3'}}},
+    scales:{x:{ticks:{color:'#8994b3'},grid:{color:'#232b45'}},y:{ticks:{color:'#8994b3',font:{size:11}},grid:{display:false}}}}});
+  const total=logged+zero, comp=total?Math.round(logged/total*100):0;
+  $('ringVal').textContent=comp+'%';
+  ringChart?.destroy();
+  ringChart=new Chart($('ringChart'),{type:'doughnut',
+    data:{labels:['Compliant','Gap'],datasets:[{data:[comp,100-comp],
+      backgroundColor:[comp>=85?'#10b981':comp>=70?'#f59e0b':'#f43f5e','#232b45'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',animation:{duration:700},
+      plugins:{legend:{position:'bottom',labels:{color:'#8994b3',boxWidth:10}}}}});
+}
+function renderArts(teamData){
+  $('artGrid').innerHTML=ARTS.map(t=>{
+    const x=teamData.find(d=>d.team===t)||{total:0,zero:0,logged:0,compliance:0,inc:0,sr:0};
+    const c=x.compliance>=90?'var(--emerald)':x.compliance>=80?'var(--amber)':'var(--rose)';
+    const safe=t.replace(/'/g,"\\'");
+    return `<div class="artcard" onclick="openArt('${safe}')">
+      <div style="display:flex;justify-content:space-between;gap:10px">
+      <div><h3>${t}</h3><div class="artmeta">INC ${x.inc} &middot; SR ${x.sr} &middot; Total ${x.total}</div></div>
+      <b style="color:${c};font-size:21px">${x.compliance}%</b></div>
+      <div class="artmini"><div><b>${x.total}</b><span>TICKETS</span></div>
+      <div><b style="color:var(--rose)">${x.zero}</b><span>ZERO</span></div>
+      <div><b style="color:var(--emerald)">${x.logged}</b><span>LOGGED</span></div></div>
+      <div class="progress"><i style="width:${x.compliance}%"></i></div></div>`;
+  }).join('')||'<div style="color:var(--muted);font-size:12px">No ART data in this snapshot.</div>';
+}
+function renderOwners(teamData){
+  const owners=[...new Set(rows.map(r=>r.employee).filter(Boolean))].map(employee=>{
+    const x=rows.filter(r=>r.employee===employee);
+    return{employee,zero:x.filter(r=>r.hours===0).length,total:x.length,team:x[0]?.team||''};
+  }).sort((a,b)=>b.zero-a.zero).slice(0,10);
+  const max=Math.max(1,...owners.map(x=>x.zero));
+  $('ownerList').innerHTML=owners.map((x,i)=>`<div class="rankrow"><span class="ranknum">${i+1}</span>
+    <div><b>${x.employee}</b><div style="color:var(--muted);font-size:11px">${x.team}</div>
+    <div class="sparkline"><i style="width:${x.zero/max*100}%"></i></div></div>
+    <strong style="color:var(--rose)">${x.zero}</strong></div>`).join('')||'<div style="color:var(--muted);font-size:12px">No zero-effort assignees in this snapshot.</div>';
+  const lead=[...teamData].sort((a,b)=>b.compliance-a.compliance||a.zero-b.zero);
+  $('leaderList').innerHTML=lead.map((x,i)=>{
+    const c=x.compliance>=90?'var(--emerald)':x.compliance>=80?'var(--amber)':'var(--rose)';
+    return `<div class="rankrow"><span class="ranknum">${i+1}</span>
+    <div><b>${x.team}</b><div class="sparkline"><i style="width:${x.compliance}%;background:linear-gradient(90deg,var(--emerald),var(--sky))"></i></div></div>
+    <strong style="color:${c}">${x.compliance}%</strong></div>`;
+  }).join('');
+}
+function openArt(team){
+  const x=rows.filter(r=>r.team===team);
+  const z=x.filter(r=>r.hours===0);
+  const people=[...new Set(z.map(r=>r.employee).filter(Boolean))];
+  $('modalTitle').textContent=team;
+  $('modalContent').innerHTML=`<div class="artmini" style="grid-template-columns:repeat(3,1fr)">
+    <div><b>${x.length}</b><span>TICKETS</span></div>
+    <div><b style="color:var(--rose)">${z.length}</b><span>ZERO</span></div>
+    <div><b style="color:var(--emerald)">${x.length-z.length}</b><span>LOGGED</span></div></div>
+    <h3 style="margin:16px 0 8px;font-size:14px">Assignees requiring follow-up</h3>
+    <div class="ranklist">${people.slice(0,20).map((p,i)=>`<div class="rankrow"><span class="ranknum">${i+1}</span><b>${p}</b><strong style="color:var(--rose)">${z.filter(r=>r.employee===p).length}</strong></div>`).join('')||'<div style="color:var(--muted);font-size:12px">No assignees to show for this ART.</div>'}</div>`;
+  $('modal').classList.add('show');
+}
+function renderEmployees(){
+  const q=($('empSearch').value||'').toLowerCase();
+  const es=[...new Set(rows.map(r=>r.employee).filter(Boolean))].map(employee=>{
+    const x=rows.filter(r=>r.employee===employee), z=x.filter(r=>r.hours===0).length;
+    return{employee,team:x[0]?.team||'',total:x.length,zero:z,hours:x.reduce((s,r)=>s+r.hours,0),
+      comp:x.length?Math.round((x.length-z)/x.length*100):0};
+  }).filter(e=>`${e.employee} ${e.team}`.toLowerCase().includes(q))
+    .sort((a,b)=>b.zero-a.zero||b.total-a.total);
+  $('empBody').innerHTML=es.map(r=>`<tr><td>${r.employee}</td><td>${r.team}</td><td>${r.total}</td>
+    <td style="color:var(--rose);font-weight:800">${r.zero}</td><td class="mono">${r.hours.toFixed(1)}</td>
+    <td><span class="badge ${r.comp>=90?'good':'bad'}">${r.comp}%</span></td></tr>`).join('')
+    ||'<tr><td colspan="6" style="text-align:center;color:var(--muted)">No matching employees.</td></tr>';
+}
+function renderTickets(){
+  const q=($('ticketSearch').value||'').toLowerCase(), s=$('statusFilter').value;
+  const f=rows.filter(r=>
+    (s==='All status'||(s==='Zero effort'?r.hours===0:r.hours>0)) &&
+    `${r.ticket} ${r.team} ${r.employee} ${r.product}`.toLowerCase().includes(q)
+  );
+  $('ticketBody').innerHTML=[...f].sort((a,b)=>a.hours-b.hours).map(r=>`<tr>
+    <td class="mono">${r.ticket}</td><td>${r.team}</td><td>${r.employee||'Unassigned'}</td><td>${r.type}</td>
+    <td>${r.product}</td><td class="mono" style="color:${r.hours?'var(--emerald)':'var(--rose)'}">${r.hours.toFixed(1)}</td>
+    <td>${r.match}</td><td><span class="badge ${r.hours?'good':'bad'}">${r.hours?'&#9989; Logged':'&#128308; Zero Effort'}</span></td></tr>`).join('')
+    ||'<tr><td colspan="8" style="text-align:center;color:var(--muted)">No matching records.</td></tr>';
+}
+init();
+</script>
+</body>
+</html>
