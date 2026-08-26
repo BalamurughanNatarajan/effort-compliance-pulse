@@ -196,11 +196,12 @@ tbody tr:hover{background:var(--bg)}
     <section class="view" id="view-records">
       <div class="panel">
         <div class="filterbar">
-          <input id="ticketSearch" placeholder="&#128269; Search ticket, employee, ART, product...">
+          <input id="ticketSearch" placeholder="&#128269; Search ticket, employee, ART, application...">
+          <select id="ticketArtFilter"><option>All ARTs</option></select>
           <select id="statusFilter"><option>All status</option><option>Zero effort</option><option>Effort logged</option></select>
         </div>
         <div class="tablewrap">
-          <table><thead><tr><th>Incident Number</th><th>ART</th><th>Assignee</th><th>Type</th><th>Product</th><th>Efforts in AppLens</th><th>Match</th><th>Status</th></tr></thead>
+          <table><thead><tr><th>Incident Number</th><th>ART</th><th>Assignee</th><th>Type</th><th>Application Name</th><th>Efforts in AppLens</th><th>Match</th><th>Status</th></tr></thead>
           <tbody id="ticketBody"></tbody></table>
         </div>
       </div>
@@ -275,6 +276,7 @@ function init(){
   });
 }
 function bind(){
+  const af=$('ticketArtFilter'); if(af) ARTS.forEach(x=>af.add(new Option(x,x)));
   document.querySelectorAll('.navitem[data-view]').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('.navitem').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
@@ -284,12 +286,14 @@ function bind(){
   $('modal').onclick=e=>{if(e.target.id==='modal')$('modal').classList.remove('show')};
   $('empSearch').oninput=()=>renderEmployees();
   $('ticketSearch').oninput=()=>renderTickets();
+  $('ticketArtFilter').onchange=()=>renderTickets();
   $('statusFilter').onchange=()=>renderTickets();
 }
 function computeTeamData(){
   return ARTS.map(team=>{
     const x=rows.filter(r=>r.team===team), zero=x.filter(r=>r.hours===0).length;
     return{team,total:x.length,zero,logged:x.length-zero,
+      zeroPct:x.length?Math.round(zero/x.length*100):0,
       compliance:x.length?Math.round((x.length-zero)/x.length*100):0,
       inc:x.filter(r=>r.type==='INC').length, sr:x.filter(r=>r.type==='SR').length};
   }).filter(x=>x.total);
@@ -340,14 +344,15 @@ function renderCharts(teamData){
       plugins:{legend:{position:'bottom',labels:{color:'#8994b3',boxWidth:10}}}}});
 }
 function renderArts(teamData){
-  $('artGrid').innerHTML=ARTS.map(t=>{
-    const x=teamData.find(d=>d.team===t)||{total:0,zero:0,logged:0,compliance:0,inc:0,sr:0};
-    const c=x.compliance>=90?'var(--emerald)':x.compliance>=80?'var(--amber)':'var(--rose)';
+  const ordered=[...teamData].sort((a,b)=>b.zeroPct-a.zeroPct||b.zero-a.zero||a.team.localeCompare(b.team));
+  $('artGrid').innerHTML=ordered.map(x=>{
+    const t=x.team;
+    const c=x.zeroPct<=10?'var(--emerald)':x.zeroPct<=20?'var(--amber)':'var(--rose)';
     const safe=t.replace(/'/g,"\\'");
     return `<div class="artcard" onclick="openArt('${safe}')">
       <div style="display:flex;justify-content:space-between;gap:10px">
       <div><h3>${t}</h3><div class="artmeta">INC ${x.inc} &middot; SR ${x.sr} &middot; Total ${x.total}</div></div>
-      <b style="color:${c};font-size:21px">${x.compliance}%</b></div>
+      <b title="Zero effort percentage" style="color:${c};font-size:21px">${x.zeroPct}%</b></div>
       <div class="artmini"><div><b>${x.total}</b><span>TICKETS</span></div>
       <div><b style="color:var(--rose)">${x.zero}</b><span>ZERO</span></div>
       <div><b style="color:var(--emerald)">${x.logged}</b><span>LOGGED</span></div></div>
@@ -399,9 +404,9 @@ function renderEmployees(){
     ||'<tr><td colspan="6" style="text-align:center;color:var(--muted)">No matching employees.</td></tr>';
 }
 function renderTickets(){
-  const q=($('ticketSearch').value||'').toLowerCase(), s=$('statusFilter').value;
+  const q=($('ticketSearch').value||'').toLowerCase(), s=$('statusFilter').value, a=$('ticketArtFilter').value;
   const f=rows.filter(r=>
-    (s==='All status'||(s==='Zero effort'?r.hours===0:r.hours>0)) &&
+    (a==='All ARTs'||r.team===a) && (s==='All status'||(s==='Zero effort'?r.hours===0:r.hours>0)) &&
     `${r.ticket} ${r.team} ${r.employee} ${r.product}`.toLowerCase().includes(q)
   );
   $('ticketBody').innerHTML=[...f].sort((a,b)=>a.hours-b.hours).map(r=>`<tr>
